@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" ng-app> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Angular App</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <link rel="stylesheet" href="css/main.css">
+        <script src="js/vendor/modernizr-2.6.2-respond-1.1.0.min.js"></script>
+        <script src="js/vendor/angular.min.js"></script>
+    </head>
+    <body>
+        <!--[if lt IE 7]>
+            <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
+        <![endif]-->
+        <div class="megaHash">
+          <ul class="files">
+            <li class="each-file">
+              <div id="progress_bar"><div class="percent"></div></div>
+              <div class="file-details fleft">
+                <div class="file-hash-div">File Name :
+                  <span class="file-name">db.dat</span>
+                </div>
+                <div class="file-hash-div"><b>Megahash</b> :
+                  <span class="file-hash">b1abcdsdfg674dfdifdjfnewrerer45845eefjdnf</span>
+                </div>
+              </div>
+              <div class="iterations fleft">
+                Iterations : <input type="number" min="0" value="0" class="iteration-number form-control">
+              </div>
+              <div class="button-close fright"><span>x</span></div>
+              <div class="clear"></div>
+            </li>
+            <li class="each-file">
+              <div id="progress_bar" class="loading"><div style="width: 70%" class="percent"></div></div>
+              <div class="file-details fleft">
+                <div class="file-hash-div">File Name :
+                  <span class="file-name">Angular App.mp3</span>
+                </div>
+                <div class="file-hash-div"><b>Megahash</b> :
+                  <span class="file-hash">Computing... - <a class="cancel">Cancel</a></span>
+                </div>
+              </div>
+              <div class="iterations fleft">
+                Iterations : <input type="number" min="0" value="0" class="iteration-number form-control">
+              </div>
+              <div class="button-close fright"><span>x</span></div>
+              <div class="clear"></div>
+            </li>
+          </ul>
+          <div class="file-input btn btn-block btn-primary btn-file button-add">
+              <span><b>+</b> </span> Add a file to megahash...<input type="file" id="files" name="file">
+          </div>
+        </div>
+        <script src="js/main.js"></script>
+    </body>
+</html>
