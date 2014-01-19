@@ -1,31 +1,31 @@
 var app = angular.module('Pirate3D', []);
 
+/* Hack for Non Blocking exection of Long Running JS Function */
+var RefQueue = {
+    SetTimer: null,
+    Queue: {},
+    add: function(fn, time, key) {
+        RefQueue.SetTimer = setTimeout(function() {
+            fn.call();
+        }, time || 2);
+        if(RefQueue.Queue[key] == undefined) RefQueue.Queue[key] = [];
+        RefQueue.Queue[key].push(RefQueue.SetTimer);
+    },
+    delete: function(key, callback) {
+        var len = RefQueue.Queue[key].length, i;
+        if(len == 0) callback.call();
+        for(i = len - 1; i >= 0; i--) {
+            clearTimeout(RefQueue.Queue[key][i]);
+            if(i == 0) {
+            	RefQueue.Queue[key] = [];
+            	callback.call();
+            }
+        }
+    }
+}
+
 app.controller('MegaHashCntrl', function ($scope) {
 	$scope.files = [];
-
-	/* Hack for Non Blocking exection of Long Running JS Function */
-	var RefQueue = {
-	    SetTimer: null,
-	    Queue: {},
-	    add: function(fn, time, key) {
-	        RefQueue.SetTimer = setTimeout(function() {
-	            fn.call();
-	        }, time || 2);
-	        if(RefQueue.Queue[key] == undefined) RefQueue.Queue[key] = [];
-	        RefQueue.Queue[key].push(RefQueue.SetTimer);
-	    },
-	    delete: function(key, callback) {
-	        var len = RefQueue.Queue[key].length, i;
-	        if(len == 0) callback.call();
-	        for(i = len - 1; i >= 0; i--) {
-                clearTimeout(RefQueue.Queue[key][i]);
-                if(i == 0) {
-                	RefQueue.Queue[key] = [];
-                	callback.call();
-                }
-	        }
-	    }
-	}
 
 	/* Snippet for Safe use of $scope.apply */
 	$scope.safeApply = function(fn) {
@@ -47,7 +47,7 @@ app.controller('MegaHashCntrl', function ($scope) {
 			megahash: "",
 			NumValue: 0,
 			style: {
-				width: "0%" 
+				width: "0%"
 			},
 			read: ""
 		};
@@ -69,6 +69,7 @@ app.controller('MegaHashCntrl', function ($scope) {
 	    };
 	    reader.onload = function(e) {
 	    	$scope.files[reader.originalLength].read = reader.result;
+            $scope.files[reader.originalLength].style.width = "0%";
 	    	RefQueue.add(function() {
 				$scope.megaHashCompute(reader.result, $scope.files[reader.originalLength].NumValue, reader.originalLength);
 	    	}, 1, reader.originalLength);
@@ -89,20 +90,24 @@ app.controller('MegaHashCntrl', function ($scope) {
 	$scope.megaHashCompute = function(file, n, originalLength) {
 		RefQueue.add(function() {
 			if(!$scope.files[originalLength].Canceled) {
-				var mdHash = md5(file);
-				n--;
-				var loaded = $scope.files[originalLength].NumValue - n,
-					total = $scope.files[originalLength].NumValue;
-				$scope._calculatePercentage(loaded, total, originalLength);
-				if(n >= 0) {
-					$scope.megaHashCompute(mdHash + file, n, originalLength);
-				} else {
-					$scope.safeApply(function() {
-						//Angular.extend can be used if the object is too large
-						$scope.files[originalLength].loading = false;
-						$scope.files[originalLength].megahash = mdHash;
-					});
-				}
+				md5(file, originalLength, function(mdHash) {
+					n--;
+					var loaded = $scope.files[originalLength].NumValue - n,
+						total = $scope.files[originalLength].NumValue;
+					$scope._calculatePercentage(loaded, total, originalLength);
+					if(n >= 0) {
+						$scope.megaHashCompute(mdHash + file, n, originalLength);
+					} else {
+						$scope.safeApply(function() {
+							//Angular.extend can be used if the object is too large
+							$scope.files[originalLength].loading = false;
+							$scope.files[originalLength].megahash = mdHash;
+							setTimeout(function() {
+								$scope.files[originalLength].style.width = "0%";
+							}, 2000);
+						});
+					}
+				});
 			}
 		}, 1, originalLength);
 	}
@@ -110,9 +115,10 @@ app.controller('MegaHashCntrl', function ($scope) {
 	$scope._CancelCommon = function(originalLength, callback) {
 		$scope.files[originalLength].loading = true;
 		$scope.files[originalLength].Canceled = true;
-
+		
 		RefQueue.delete(originalLength, function() {
 			$scope.safeApply(function() {
+				$scope.files[originalLength].style.width = "0%";
 				$scope.files[originalLength].Canceled = false;
 			});
 			callback.call();
@@ -122,6 +128,7 @@ app.controller('MegaHashCntrl', function ($scope) {
 	$scope.megaHashIterate = function(file, n, originalLength) {
 		$scope._CancelCommon(originalLength, function() {
 			RefQueue.add(function() {
+				$scope.files[originalLength].style.width = "0%";
 				$scope.megaHashCompute(file, n, originalLength);
 			}, 1, originalLength);
 		});
@@ -129,6 +136,7 @@ app.controller('MegaHashCntrl', function ($scope) {
 
 	$scope.CancelComputation = function(originalLength) {
 		RefQueue.delete(originalLength, function() {});
+		$scope.files[originalLength].style.width = "0%";
 		$scope.files[originalLength].Canceled = true;
 		$scope.files[originalLength].loading = false;
 	}
